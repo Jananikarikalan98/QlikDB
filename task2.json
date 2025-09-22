@@ -1,0 +1,133 @@
+{
+	"name":	"task2__2025-09-22--10-06-04-104319",
+	"cmd.replication_definition":	{
+		"tasks":	[{
+				"task":	{
+					"name":	"task2",
+					"source_name":	"sqlserver_source",
+					"target_names":	["mysql_target"]
+				},
+				"source":	{
+					"rep_source":	{
+						"source_name":	"sqlserver_source",
+						"database_name":	"sqlserver_source"
+					},
+					"source_tables":	{
+						"name":	"sqlserver_source",
+						"explicit_included_tables":	[{
+								"owner":	"dbo",
+								"name":	"EmployeeInfo",
+								"estimated_size":	5,
+								"orig_db_id":	338100245,
+								"validation_sampling_percentage":	0
+							}]
+					}
+				},
+				"targets":	[{
+						"rep_target":	{
+							"target_name":	"mysql_target",
+							"target_state":	"DISABLED",
+							"database_name":	"mysql_target"
+						}
+					}],
+				"task_settings":	{
+					"source_settings":	{
+					},
+					"target_settings":	{
+						"queue_settings":	{
+							"message_shape":	{
+							},
+							"key_shape":	{
+							}
+						},
+						"ftm_settings":	{
+						},
+						"artifacts_cleanup_enabled":	false
+					},
+					"sorter_settings":	{
+						"local_transactions_storage":	{
+						}
+					},
+					"common_settings":	{
+						"change_table_settings":	{
+							"handle_ddl":	false,
+							"header_columns_settings":	{
+							}
+						},
+						"audit_table_settings":	{
+						},
+						"dr_settings":	{
+						},
+						"statistics_table_settings":	{
+						},
+						"bidi_table_settings":	{
+						},
+						"task_uuid":	"31beeabf-d477-9f4d-bdc1-1f7e029f1e2e",
+						"status_table_settings":	{
+						},
+						"suspended_tables_table_settings":	{
+						},
+						"suspended_tables_table_enabled":	true,
+						"history_table_settings":	{
+						},
+						"exception_table_settings":	{
+						},
+						"recovery_table_settings":	{
+						},
+						"data_batching_settings":	{
+						},
+						"data_batching_table_settings":	{
+						},
+						"log_stream_settings_depricated":	{
+						},
+						"ddl_history_table_settings":	{
+						},
+						"customized_charset_settings":	{
+							"validation":	{
+								"sub_char":	0
+							}
+						}
+					}
+				}
+			}],
+		"databases":	[{
+				"name":	"sqlserver_source",
+				"role":	"SOURCE",
+				"is_licensed":	true,
+				"type_id":	"SQL_SERVER_COMPONENT_TYPE",
+				"db_settings":	{
+					"$type":	"SqlserverSettings",
+					"username":	"sql98",
+					"password":	"{ZA7105A7B963DA82175E9026B98AE9F4B3EA4F09AA9DF4DBF5}",
+					"server":	"DESKTOP-1UL6NG9\\SQLSERVER",
+					"database":	"task_1",
+					"useWindowsAuthentication":	false,
+					"safeguardPolicy":	"RELY_ON_SQL_SERVER_REPLICATION_AGENT",
+					"suspendTableWithComputedColumn":	true
+				},
+				"override_properties":	{
+				}
+			}, {
+				"name":	"mysql_target",
+				"role":	"TARGET",
+				"is_licensed":	true,
+				"type_id":	"MYSQL_TARGET_COMPONENT_TYPE",
+				"db_settings":	{
+					"$type":	"MysqltargetSettings",
+					"username":	"root",
+					"password":	"{ZA784BBA0214A82DD990E46EEEABF3C0EC52E962C8F58E0D81}",
+					"server":	"localhost",
+					"database":	"sys"
+				},
+				"override_properties":	{
+				}
+			}]
+	},
+	"_version":	{
+		"version":	"2023.5.0.213",
+		"version_major":	2023,
+		"version_minor":	5,
+		"version_revision":	213
+	},
+	"description":	"Host name: DESKTOP-1UL6NG9, Time: 2025-09-22 10:06:04.104319"
+}
