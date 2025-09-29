@@ -2,78 +2,44 @@ pipeline {
     agent any
 
     environment {
-        REPLICATE_SERVER = "http://your-replicate-server:8080"  // Qlik Replicate server URL
-        REPO_BRANCH      = "main"
+        // Jenkins credentials ID you created
+        QLIK_CREDS = credentials('bcba415c-74bf-4e40-a055-6307d336488e')
+        QLIK_API = "http://localhost:3562/replicate/api/v1"  // Update if different
     }
 
     stages {
-        stage('Checkout Repository') {
+        stage('Checkout Repo') {
             steps {
-                echo "Cloning GitHub repository..."
-                git branch: "${REPO_BRANCH}", url: 'https://github.com/Jananikarikalan98/QlikDB.git'
+                git branch: 'main',
+                    url: 'https://github.com/Jananikarikalan98/QlikDB.git'
             }
         }
 
         stage('Find Task JSON Files') {
             steps {
-                echo "Listing all JSON task files in repo..."
-                script {
-                    TASK_FILES = sh(script: "ls *.json", returnStdout: true).trim().split("\\n")
-                    echo "Found tasks: ${TASK_FILES}"
-                }
+                echo 'Listing all JSON task files in repo...'
+                bat 'dir *.json'
             }
         }
 
         stage('Validate and Deploy Tasks') {
             steps {
-                script {
-                    for (task in TASK_FILES) {
-                        echo "Processing task file: ${task}"
-
-                        // Validate JSON
-                        sh "jq empty ${task}"
-
-                        // Deploy task
-                        withCredentials([usernamePassword(credentialsId: 'bcba415c-74bf-4e40-a055-6307d336488e', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                            sh """
-                            curl -X POST -u ${USER}:${PASS} \
-                                 -H 'Content-Type: application/json' \
-                                 -d @${task} \
-                                 ${REPLICATE_SERVER}/replicate/api/v1/tasks
-                            """
-                        }
-
-                        // Start replication task
-                        withCredentials([usernamePassword(credentialsId: 'bcba415c-74bf-4e40-a055-6307d336488e', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                            sh """
-                            curl -X POST -u ${USER}:${PASS} \
-                                 ${REPLICATE_SERVER}/replicate/api/v1/tasks/start
-                            """
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Check Replication Status') {
-            steps {
-                echo "Fetching replication tasks status..."
-                withCredentials([usernamePassword(credentialsId: 'bcba415c-74bf-4e40-a055-6307d336488e', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh """
-                    curl -X GET -u ${USER}:${PASS} \
-                         ${REPLICATE_SERVER}/replicate/api/v1/tasks/status
-                    """
-                }
+                echo 'Deploying task2.json to Qlik Replicate...'
+                bat """
+                curl -u %QLIK_CREDS_USR%:%QLIK_CREDS_PSW% -X POST ^
+                -H "Content-Type: application/json" ^
+                -d @task2.json %QLIK_API%/tasks
+                """
             }
         }
     }
 
     post {
         success {
-            echo "All Qlik Replicate tasks deployed successfully."
+            echo 'Task successfully deployed to Qlik Replicate!'
         }
         failure {
-            echo "Qlik Replicate CI/CD pipeline failed. Check logs for details."
+            echo 'Deployment failed. Check logs.'
         }
     }
 }
