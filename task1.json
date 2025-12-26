@@ -1,0 +1,128 @@
+{
+	"name":	"task1__2025-12-26--16-45-52-663431",
+	"cmd.replication_definition":	{
+		"tasks":	[{
+				"task":	{
+					"name":	"task1",
+					"source_name":	"mysql_src",
+					"target_names":	["mysql_target"]
+				},
+				"source":	{
+					"rep_source":	{
+						"source_name":	"mysql_src",
+						"database_name":	"mysql_src"
+					},
+					"source_tables":	{
+						"name":	"mysql_src",
+						"explicit_included_tables":	[{
+								"owner":	"sys",
+								"name":	"customers",
+								"validation_sampling_percentage":	0
+							}]
+					}
+				},
+				"targets":	[{
+						"rep_target":	{
+							"target_name":	"mysql_target",
+							"target_state":	"DISABLED",
+							"database_name":	"mysql_target"
+						}
+					}],
+				"task_settings":	{
+					"source_settings":	{
+					},
+					"target_settings":	{
+						"queue_settings":	{
+							"message_shape":	{
+							},
+							"key_shape":	{
+							}
+						},
+						"ftm_settings":	{
+						},
+						"artifacts_cleanup_enabled":	false
+					},
+					"sorter_settings":	{
+						"local_transactions_storage":	{
+						}
+					},
+					"common_settings":	{
+						"change_table_settings":	{
+							"handle_ddl":	false,
+							"header_columns_settings":	{
+							}
+						},
+						"audit_table_settings":	{
+						},
+						"save_changes_enabled":	true,
+						"dr_settings":	{
+						},
+						"statistics_table_settings":	{
+						},
+						"bidi_table_settings":	{
+						},
+						"task_uuid":	"5c07b6bf-5bfb-8545-b60b-7a459657106d",
+						"status_table_settings":	{
+						},
+						"status_table_enabled":	true,
+						"suspended_tables_table_settings":	{
+						},
+						"history_table_settings":	{
+						},
+						"exception_table_settings":	{
+						},
+						"recovery_table_settings":	{
+						},
+						"data_batching_settings":	{
+						},
+						"data_batching_table_settings":	{
+						},
+						"log_stream_settings_depricated":	{
+						},
+						"ddl_history_table_settings":	{
+						},
+						"customized_charset_settings":	{
+							"validation":	{
+								"sub_char":	0
+							}
+						}
+					}
+				}
+			}],
+		"databases":	[{
+				"name":	"mysql_src",
+				"role":	"SOURCE",
+				"is_licensed":	true,
+				"type_id":	"MYSQL_COMPONENT_TYPE",
+				"db_settings":	{
+					"$type":	"MysqlSettings",
+					"username":	"root",
+					"password":	"{ZABCCC94A72A19A5595F8D845AF59BDC114994BFD2919B25F5}",
+					"server":	"localhost"
+				},
+				"override_properties":	{
+				}
+			}, {
+				"name":	"mysql_target",
+				"role":	"TARGET",
+				"is_licensed":	true,
+				"type_id":	"MYSQL_TARGET_COMPONENT_TYPE",
+				"db_settings":	{
+					"$type":	"MysqltargetSettings",
+					"username":	"root",
+					"password":	"{ZA784BBA0214A82DD990E46EEEABF3C0EC52E962C8F58E0D81}",
+					"server":	"localhost",
+					"database":	"qlik"
+				},
+				"override_properties":	{
+				}
+			}]
+	},
+	"_version":	{
+		"version":	"2023.5.0.213",
+		"version_major":	2023,
+		"version_minor":	5,
+		"version_revision":	213
+	},
+	"description":	"Host name: DESKTOP-1UL6NG9, Time: 2025-12-26 16:45:52.663431"
+}
