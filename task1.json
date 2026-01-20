@@ -1,5 +1,5 @@
 {
-	"name":	"task1__2025-12-26--16-45-52-663431",
+	"name":	"task1__2026-01-20--11-42-01-538097",
 	"cmd.replication_definition":	{
 		"tasks":	[{
 				"task":	{
@@ -16,7 +16,8 @@
 						"name":	"mysql_src",
 						"explicit_included_tables":	[{
 								"owner":	"sys",
-								"name":	"customers",
+								"name":	"employeeinfo",
+								"estimated_size":	5,
 								"validation_sampling_percentage":	0
 							}]
 					}
@@ -124,5 +125,5 @@
 		"version_minor":	5,
 		"version_revision":	213
 	},
-	"description":	"Host name: DESKTOP-1UL6NG9, Time: 2025-12-26 16:45:52.663431"
+	"description":	"Host name: DESKTOP-1UL6NG9, Time: 2026-01-20 11:42:01.538097"
 }
