@@ -2,16 +2,26 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "https://localhost/attunityenterprisemanager"
+        QLIK_URL  = "https://localhost/attunityenterprisemanager"
         TASK_NAME = "task1"
     }
 
     stages {
 
+        stage('Create Session') {
+            steps {
+                bat '''
+                curl -k -c cookies.txt %QLIK_URL%/api/v1/about
+                '''
+            }
+        }
+
         stage('Stop Task') {
             steps {
                 bat '''
-                curl -k -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop
+                curl -k -b cookies.txt -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop ^
+                -H "Content-Type: application/json" ^
+                -d ""
                 '''
             }
         }
@@ -19,7 +29,7 @@ pipeline {
         stage('Import Task JSON') {
             steps {
                 bat '''
-                curl -k -X POST %QLIK_URL%/api/v1/tasks/import ^
+                curl -k -b cookies.txt -X POST %QLIK_URL%/api/v1/tasks/import ^
                 -F file=@task1.json
                 '''
             }
@@ -28,7 +38,9 @@ pipeline {
         stage('Start Task') {
             steps {
                 bat '''
-                curl -k -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start
+                curl -k -b cookies.txt -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start ^
+                -H "Content-Type: application/json" ^
+                -d ""
                 '''
             }
         }
@@ -36,8 +48,9 @@ pipeline {
         stage('Check Task Status') {
             steps {
                 bat '''
-                timeout /t 10
-                curl -k %QLIK_URL%/api/v1/tasks/%TASK_NAME% > status.json
+                ping -n 10 127.0.0.1 > nul
+
+                curl -k -b cookies.txt %QLIK_URL%/api/v1/tasks/%TASK_NAME% > status.json
                 type status.json | findstr RUNNING
 
                 if errorlevel 1 (
