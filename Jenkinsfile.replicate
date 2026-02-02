@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "http://192.168.1.6:3560"
+        QLIK_URL = "http://desktop-1ul6ng9:3560"
         TASK_NAME = "task1"
     }
 
