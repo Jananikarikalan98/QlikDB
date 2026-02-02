@@ -2,10 +2,8 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "http://YOUR_QLIK_SERVER_IP:3560"
+        QLIK_URL = "http://desktop-1u6ng9:3560"
         TASK_NAME = "task1"
-        USERNAME = "admin"
-        PASSWORD = "password"
     }
 
     stages {
@@ -19,11 +17,17 @@ pipeline {
 
         stage('Login to Qlik Replicate') {
             steps {
-                bat '''
-                curl -c cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/login ^
-                -H "Content-Type: application/json" ^
-                -d "{\"username\":\"%USERNAME%\",\"password\":\"%PASSWORD%\"}"
-                '''
+                withCredentials([usernamePassword(
+                    credentialsId: 'qlik-replicate-creds',
+                    usernameVariable: 'QLIK_USER',
+                    passwordVariable: 'QLIK_PASS'
+                )]) {
+                    bat '''
+                    curl -c cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/login ^
+                    -H "Content-Type: application/json" ^
+                    -d "{\"username\":\"%QLIK_USER%\",\"password\":\"%QLIK_PASS%\"}"
+                    '''
+                }
             }
         }
 
