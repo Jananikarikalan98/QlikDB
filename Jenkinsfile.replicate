@@ -2,32 +2,16 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "http://desktop-1ul6ng9:3560"
+        QLIK_URL = "http://localhost:3560"
         TASK_NAME = "task1"
     }
 
     stages {
 
-        stage('Login to Qlik Replicate') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'qlik-replicate-creds',
-                    usernameVariable: 'QLIK_USER',
-                    passwordVariable: 'QLIK_PASS'
-                )]) {
-                    bat '''
-                    curl -c cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/login ^
-                    -H "Content-Type: application/json" ^
-                    -d "{\"username\":\"%QLIK_USER%\",\"password\":\"%QLIK_PASS%\"}"
-                    '''
-                }
-            }
-        }
-
         stage('Stop Task') {
             steps {
                 bat '''
-                curl -b cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/%TASK_NAME%/stop
+                curl -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop
                 '''
             }
         }
@@ -35,7 +19,7 @@ pipeline {
         stage('Import Task JSON') {
             steps {
                 bat '''
-                curl -b cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/import ^
+                curl -X POST %QLIK_URL%/api/v1/tasks/import ^
                 -F file=@task1.json
                 '''
             }
@@ -44,7 +28,7 @@ pipeline {
         stage('Start Task') {
             steps {
                 bat '''
-                curl -b cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/%TASK_NAME%/start
+                curl -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start
                 '''
             }
         }
@@ -52,9 +36,8 @@ pipeline {
         stage('Check Task Status') {
             steps {
                 bat '''
-                timeout /t 15
-
-                curl -b cookies.txt %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/%TASK_NAME% > status.json
+                timeout /t 10
+                curl %QLIK_URL%/api/v1/tasks/%TASK_NAME% > status.json
                 type status.json | findstr RUNNING
 
                 if errorlevel 1 (
