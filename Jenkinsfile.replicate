@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "http://localhost:3560"
+        QLIK_URL = "https://localhost/attunityenterprisemanager"
         TASK_NAME = "task1"
     }
 
@@ -11,7 +11,7 @@ pipeline {
         stage('Stop Task') {
             steps {
                 bat '''
-                curl -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop
+                curl -k -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop
                 '''
             }
         }
@@ -19,7 +19,7 @@ pipeline {
         stage('Import Task JSON') {
             steps {
                 bat '''
-                curl -X POST %QLIK_URL%/api/v1/tasks/import ^
+                curl -k -X POST %QLIK_URL%/api/v1/tasks/import ^
                 -F file=@task1.json
                 '''
             }
@@ -28,7 +28,7 @@ pipeline {
         stage('Start Task') {
             steps {
                 bat '''
-                curl -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start
+                curl -k -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start
                 '''
             }
         }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 bat '''
                 timeout /t 10
-                curl %QLIK_URL%/api/v1/tasks/%TASK_NAME% > status.json
+                curl -k %QLIK_URL%/api/v1/tasks/%TASK_NAME% > status.json
                 type status.json | findstr RUNNING
 
                 if errorlevel 1 (
