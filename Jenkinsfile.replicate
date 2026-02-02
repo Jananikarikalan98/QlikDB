@@ -2,18 +2,11 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "http://desktop-1u6ng9:3560"
+        QLIK_URL = "http://desktop-lu6ng9:3560"
         TASK_NAME = "task1"
     }
 
     stages {
-
-        stage('Checkout GitHub Repo') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/Jananikaralan98/QlikDB.git'
-            }
-        }
 
         stage('Login to Qlik Replicate') {
             steps {
@@ -34,7 +27,7 @@ pipeline {
         stage('Stop Task') {
             steps {
                 bat '''
-                curl -b cookies.txt -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop
+                curl -b cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/%TASK_NAME%/stop
                 '''
             }
         }
@@ -42,7 +35,7 @@ pipeline {
         stage('Import Task JSON') {
             steps {
                 bat '''
-                curl -b cookies.txt -X POST %QLIK_URL%/api/v1/tasks/import ^
+                curl -b cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/import ^
                 -F file=@task1.json
                 '''
             }
@@ -51,7 +44,7 @@ pipeline {
         stage('Start Task') {
             steps {
                 bat '''
-                curl -b cookies.txt -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start
+                curl -b cookies.txt -X POST %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/%TASK_NAME%/start
                 '''
             }
         }
@@ -61,7 +54,7 @@ pipeline {
                 bat '''
                 timeout /t 15
 
-                curl -b cookies.txt %QLIK_URL%/api/v1/tasks/%TASK_NAME% > status.json
+                curl -b cookies.txt %QLIK_URL%/attunityenterprisemanager/api/v1/tasks/%TASK_NAME% > status.json
                 type status.json | findstr RUNNING
 
                 if errorlevel 1 (
