@@ -2,63 +2,62 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL  = "https://localhost/attunityenterprisemanager"
+        REPLICATE_BIN = "C:\\Program Files\\Attunity\\Replicate\\bin"
         TASK_NAME = "task1"
-        QLIK_USER_HEADER = "X-Qlik-User: UserDirectory=WIN,UserId=SSLTP11454"
     }
 
     stages {
 
-        stage('Stop Task') {
+        stage('Checkout GitHub Repo') {
             steps {
-                bat '''
-                curl -k -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/stop ^
-                -H "%QLIK_USER_HEADER%" ^
-                -H "Content-Type: application/json" ^
-                -d ""
-                '''
+                git branch: 'main',
+                    url: 'https://github.com/Jananikarikalan98/QlikDB.git'
             }
         }
 
-        stage('Import Task JSON') {
+        stage('Stop Replicate Task (if running)') {
             steps {
-                bat '''
-                curl -k -X POST %QLIK_URL%/api/v1/tasks/import ^
-                -H "%QLIK_USER_HEADER%" ^
-                -F file=@task1.json
-                '''
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe stoptask name=%TASK_NAME% || echo Task already stopped
+                """
             }
         }
 
-        stage('Start Task') {
+        stage('Import Replicate Task') {
             steps {
-                bat '''
-                curl -k -X POST %QLIK_URL%/api/v1/tasks/%TASK_NAME%/start ^
-                -H "%QLIK_USER_HEADER%" ^
-                -H "Content-Type: application/json" ^
-                -d ""
-                '''
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe importtask json_file="%WORKSPACE%\\task1.json"
+                """
+            }
+        }
+
+        stage('Start Replicate Task') {
+            steps {
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe starttask name=%TASK_NAME%
+                """
             }
         }
 
         stage('Check Task Status') {
             steps {
-                bat '''
-                ping -n 8 127.0.0.1 > nul
-
-                curl -k %QLIK_URL%/api/v1/tasks/%TASK_NAME% ^
-                -H "%QLIK_USER_HEADER%" > status.json
-
-                type status.json | findstr RUNNING
-
-                if errorlevel 1 (
-                    echo Task is NOT running
-                    exit /b 1
-                ) else (
-                    echo Task is RUNNING
-                )
-                '''
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe listtasks
+                """
             }
+        }
+    }
+
+    post {
+        success {
+            echo "CI/CD completed successfully for task1"
+        }
+        failure {
+            echo "CI/CD failed – check Replicate logs"
         }
     }
 }
