@@ -15,16 +15,7 @@ pipeline {
             }
         }
 
-        stage('Pause Full Load Task (if running)') {
-            steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe pausetask task=%TASK_NAME% || echo Task not running
-                """
-            }
-        }
-
-        stage('Stop Full Load Task (if running)') {
+        stage('Stop Task if Running') {
             steps {
                 bat """
                 cd "%REPLICATE_BIN%"
@@ -32,11 +23,29 @@ pipeline {
                 """
             }
         }
+
+        stage('Import Full Load Task from GitHub') {
+            steps {
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe import task json_file="%WORKSPACE%\\task2.json"
+                """
+            }
+        }
+
+        stage('Run Full Load Task') {
+            steps {
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe runtask task=%TASK_NAME%
+                """
+            }
+        }
     }
 
     post {
         success {
-            echo "CI/CD completed successfully for Full Load task: task2"
+            echo "Full Load task2 imported and started successfully"
         }
         failure {
             echo "CI/CD failed – check Replicate logs"
