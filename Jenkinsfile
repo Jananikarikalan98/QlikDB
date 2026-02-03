@@ -15,7 +15,13 @@ pipeline {
             }
         }
 
-        stage('Stop Task if Running') {
+        stage('Verify Task JSON Exists') {
+            steps {
+                bat 'dir task2.json'
+            }
+        }
+
+        stage('Stop Full Load Task (if running)') {
             steps {
                 bat """
                 cd "%REPLICATE_BIN%"
@@ -23,32 +29,14 @@ pipeline {
                 """
             }
         }
-
-        stage('Import Full Load Task from GitHub') {
-            steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe import task json_file="%WORKSPACE%\\task2.json"
-                """
-            }
-        }
-
-        stage('Run Full Load Task') {
-            steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe runtask task=%TASK_NAME%
-                """
-            }
-        }
     }
 
     post {
         success {
-            echo "Full Load task2 imported and started successfully"
+            echo "CI/CD completed: task2 safely stopped and version-controlled"
         }
         failure {
-            echo "CI/CD failed – check Replicate logs"
+            echo "CI/CD failed – check Jenkins logs"
         }
     }
 }
