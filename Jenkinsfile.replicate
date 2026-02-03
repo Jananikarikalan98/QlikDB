@@ -2,52 +2,71 @@ pipeline {
     agent any
 
     environment {
-        REPLICATE_BIN = "C:\\Program Files\\Attunity\\Replicate\\bin"
+        QLIK_URL = "https://localhost"
         TASK_NAME = "task1"
     }
 
     stages {
 
-        stage('Checkout GitHub Repo') {
+        stage('Checkout Repo') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Jananikarikalan98/QlikDB.git'
             }
         }
 
-        stage('Stop Replicate Task (if running)') {
+        stage('Login to Qlik Replicate') {
             steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe stoptask task=%TASK_NAME% || echo Task already stopped
-                """
+                withCredentials([usernamePassword(
+                    credentialsId: 'qlik-replicate-creds',
+                    usernameVariable: 'QLIK_USER',
+                    passwordVariable: 'QLIK_PASS'
+                )]) {
+                    bat '''
+                    curl -k -c cookies.txt -X POST %QLIK_URL%/attunityreplicate/api/v1/login ^
+                    -H "Content-Type: application/json" ^
+                    -d "{\"username\":\"%QLIK_USER%\",\"password\":\"%QLIK_PASS%\"}"
+                    '''
+                }
             }
         }
 
-        stage('Import Replicate Task') {
+        stage('Stop Task') {
             steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe importtask json_file="%WORKSPACE%\\task1.json"
-                """
+                bat '''
+                curl -k -b cookies.txt -X POST ^
+                %QLIK_URL%/attunityreplicate/api/v1/tasks/%TASK_NAME%/stop
+                '''
             }
         }
 
-        stage('Start Replicate Task') {
+        stage('Import Task JSON') {
             steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe starttask task=%TASK_NAME%
-                """
+                bat '''
+                curl -k -b cookies.txt -X POST ^
+                %QLIK_URL%/attunityreplicate/api/v1/tasks/import ^
+                -F file=@task1.json
+                '''
+            }
+        }
+
+        stage('Start Task') {
+            steps {
+                bat '''
+                curl -k -b cookies.txt -X POST ^
+                %QLIK_URL%/attunityreplicate/api/v1/tasks/%TASK_NAME%/start
+                '''
             }
         }
 
         stage('Check Task Status') {
             steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe listtasks
-                """
+                bat '''
+                timeout /t 15
+                curl -k -b cookies.txt ^
+                %QLIK_URL%/attunityreplicate/api/v1/tasks/%TASK_NAME% > status.json
+                type status.json | findstr RUNNING
+                '''
             }
         }
     }
