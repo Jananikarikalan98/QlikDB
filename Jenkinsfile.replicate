@@ -19,7 +19,7 @@ pipeline {
             steps {
                 bat """
                 cd "%REPLICATE_BIN%"
-                repctl.exe stoptask name=%TASK_NAME% || echo Task already stopped
+                repctl.exe stoptask task=%TASK_NAME% || echo Task already stopped
                 """
             }
         }
@@ -37,7 +37,7 @@ pipeline {
             steps {
                 bat """
                 cd "%REPLICATE_BIN%"
-                repctl.exe starttask name=%TASK_NAME%
+                repctl.exe starttask task=%TASK_NAME%
                 """
             }
         }
