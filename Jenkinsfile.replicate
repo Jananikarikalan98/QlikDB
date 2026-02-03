@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        QLIK_URL = "https://localhost"
+        REPLICATE_BIN = "C:\\Program Files\\Attunity\\Replicate\\bin"
         TASK_NAME = "task1"
     }
 
@@ -15,68 +15,40 @@ pipeline {
             }
         }
 
-        stage('Login to Qlik Replicate') {
+        stage('Stop Replicate Task') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'qlik-replicate-creds',
-                    usernameVariable: 'QLIK_USER',
-                    passwordVariable: 'QLIK_PASS'
-                )]) {
-                    bat '''
-                    curl -k -c cookies.txt -X POST %QLIK_URL%/attunityreplicate/api/v1/login ^
-                    -H "Content-Type: application/json" ^
-                    -d "{\"username\":\"%QLIK_USER%\",\"password\":\"%QLIK_PASS%\"}"
-                    '''
-                }
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe stoptask task=%TASK_NAME% || echo Task already stopped
+                """
             }
         }
 
-        stage('Stop Task') {
+        stage('Start Replicate Task') {
             steps {
-                bat '''
-                curl -k -b cookies.txt -X POST ^
-                %QLIK_URL%/attunityreplicate/api/v1/tasks/%TASK_NAME%/stop
-                '''
-            }
-        }
-
-        stage('Import Task JSON') {
-            steps {
-                bat '''
-                curl -k -b cookies.txt -X POST ^
-                %QLIK_URL%/attunityreplicate/api/v1/tasks/import ^
-                -F file=@task1.json
-                '''
-            }
-        }
-
-        stage('Start Task') {
-            steps {
-                bat '''
-                curl -k -b cookies.txt -X POST ^
-                %QLIK_URL%/attunityreplicate/api/v1/tasks/%TASK_NAME%/start
-                '''
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe starttask task=%TASK_NAME%
+                """
             }
         }
 
         stage('Check Task Status') {
             steps {
-                bat '''
-                timeout /t 15
-                curl -k -b cookies.txt ^
-                %QLIK_URL%/attunityreplicate/api/v1/tasks/%TASK_NAME% > status.json
-                type status.json | findstr RUNNING
-                '''
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe listtasks
+                """
             }
         }
     }
 
     post {
         success {
-            echo "CI/CD completed successfully for task1"
+            echo "Task lifecycle automation completed successfully"
         }
         failure {
-            echo "CI/CD failed – check Replicate logs"
+            echo "Task automation failed – check Replicate logs"
         }
     }
 }
