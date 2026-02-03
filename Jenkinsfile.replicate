@@ -15,25 +15,16 @@ pipeline {
             }
         }
 
-        stage('Stop Replicate Task') {
+        stage('Pause Replicate Task (if running)') {
             steps {
                 bat """
                 cd "%REPLICATE_BIN%"
-                repctl.exe stoptask task=%TASK_NAME% || echo Task already stopped
+                repctl.exe pausetask task=%TASK_NAME% || echo Task not running
                 """
             }
         }
 
-        stage('Start Replicate Task') {
-            steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe starttask task=%TASK_NAME%
-                """
-            }
-        }
-
-        stage('Check Task Status') {
+        stage('Verify Task Exists') {
             steps {
                 bat """
                 cd "%REPLICATE_BIN%"
@@ -45,10 +36,7 @@ pipeline {
 
     post {
         success {
-            echo "Task lifecycle automation completed successfully"
-        }
-        failure {
-            echo "Task automation failed – check Replicate logs"
+            echo "CI validation complete. Task paused safely."
         }
     }
 }
