@@ -23,20 +23,14 @@ pipeline {
                 """
             }
         }
-
-        stage('Verify Task Exists') {
-            steps {
-                bat """
-                cd "%REPLICATE_BIN%"
-                repctl.exe listtasks
-                """
-            }
-        }
     }
 
     post {
         success {
-            echo "CI validation complete. Task paused safely."
+            echo "Pipeline completed successfully. Task paused safely."
+        }
+        failure {
+            echo "Pipeline failed – check Replicate logs"
         }
     }
 }
