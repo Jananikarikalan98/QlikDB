@@ -1,26 +1,45 @@
 pipeline {
     agent any
 
+    environment {
+        REPLICATE_BIN = "C:\\Program Files\\Attunity\\Replicate\\bin"
+        TASK_NAME = "task2"
+    }
+
     stages {
 
-        stage('Checkout GitHub Repo') {
+        stage('Checkout Repo') {
             steps {
                 git branch: 'main',
                     url: 'https://github.com/Jananikarikalan98/QlikDB.git'
             }
         }
 
-        stage('List Files') {
+        stage('Pause Full Load Task (if running)') {
             steps {
-                bat 'dir'
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe pausetask task=%TASK_NAME% || echo Task not running
+                """
             }
         }
 
-        stage('Verify task1.json') {
+        stage('Stop Full Load Task (if running)') {
             steps {
-                bat 'type task1.json'
+                bat """
+                cd "%REPLICATE_BIN%"
+                repctl.exe stoptask task=%TASK_NAME% || echo Task already stopped
+                """
             }
         }
     }
-}
 
+    post {
+        success {
+            echo "CI/CD completed successfully for Full Load task: task2"
+        }
+        failure {
+            echo "CI/CD failed – check Replicate logs"
+        }
+    }
+}
